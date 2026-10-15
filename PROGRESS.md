@@ -25,11 +25,11 @@
 | P4 UI controls | ✅ done |
 | P5 audio | ✅ done |
 | P6 leaderboard/URL/a11y | ✅ done |
-| P7 review | ⬜ |
+| P7 review | ✅ done |
 | P8 refine | ⬜ |
 | P9 final analysis + report | ⬜ |
 
-**ACTIVE: P7**
+**ACTIVE: P8**
 
 ## Log
 
@@ -176,3 +176,18 @@
 - Browser-verified (G6): deep-link parse, URL write, all four shortcuts, podium
   show/dismiss/re-arm both paths, `snapshot()` all done+sorted, zero console
   errors on fresh load. 48/48 tests.
+
+### 2026-10-15 (night) — P7 complete (`bc4669c`)
+- Full gate pass, results + findings in `REVIEW.md`.
+- G3 (full): 12-lane race @ n=256 completes; fresh load zero console errors;
+  `__SORTLAB__.snapshot()` proves every lane sorted per contract.
+- G4: 6 lanes × 512 bars @ ×1 — in-page rAF sampling sustained the display
+  ceiling (~240 fps / ~4.3 ms frames on the 240 Hz test display; gate ≥ 55).
+- G5: 1440 / 768 / 375 captures.
+- Findings fixed: F1 (P1) leaderboard table clipped at 375 px →
+  `overflow-x-auto` table wrapper + dialog `max-h-[85vh]`; F2 (P2) raw float
+  ms in chips/podium → `fmtMs()` (0.1 ms precision); F3 (P2) seam's strict
+  order check misreported radix → exported `radixKey`, seam now reports
+  `sorted` / `sortedByKey` / per-lane `contract`; 12-lane re-run allContract.
+- G8 grep gate: all 88 in-lab imports stay inside `src/lab` or are
+  react/framer-motion. G9: no TODOs, strict tsc clean, JSDoc on public API.
