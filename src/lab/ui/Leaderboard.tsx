@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { SortAlgorithm, SortStats } from '../engine/types.ts'
 import { algoHue } from '../theme.ts'
@@ -30,7 +31,22 @@ function fmtMs(ms: number): string {
 
 export function Leaderboard({ rows, onDismiss }: LeaderboardProps) {
   const reduce = useReducedMotion()
+  const closeRef = useRef<HTMLButtonElement>(null)
   const ordered = [...rows].sort((a, b) => a.finishOrder - b.finishOrder)
+
+  // Keyboard a11y (G6): take focus when opened, close on Escape. The dialog
+  // is non-modal by design — background shortcuts (R to re-run) keep working.
+  const dismissRef = useRef(onDismiss)
+  dismissRef.current = onDismiss
+  useEffect(() => {
+    closeRef.current?.focus()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') dismissRef.current()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-6"
@@ -48,6 +64,7 @@ export function Leaderboard({ rows, onDismiss }: LeaderboardProps) {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-base font-semibold text-white">Leaderboard</h2>
           <button
+            ref={closeRef}
             type="button"
             onClick={onDismiss}
             aria-label="Close leaderboard"

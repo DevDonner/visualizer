@@ -51,6 +51,39 @@ never observed. Fix: deterministic re-arm — scheduler (re)creation and
 explicit reset both clear the dismissal flag. Verified both paths in the
 browser (reset+replay and setting-change).
 
+### F5 — P2 — Leaderboard dialog had no focus handling — **fixed (P8)**
+The `role="dialog"` podium took no focus on open and had no Escape-to-close;
+keyboard and screen-reader users had to hunt for the Close button. Fix:
+`Leaderboard` focuses the Close button on mount and registers a window
+`keydown` for `Escape` (via a ref, so 4 Hz parent re-renders can't churn the
+listener); `index.tsx` passes a stable `dismissLeaderboard` callback. The
+dialog is intentionally **non-modal** — background shortcuts (R to re-run)
+keep working, which matches its use as a "result banner", not a modal.
+Verified in dev **and** in the production build (`vite preview`): focus on
+the Close button on open, persists across 4 Hz ticks, Escape closes, zero
+console errors.
+
+## P8 refine cycles
+
+**Cycle 1 — edge-case exploration (zero new P0/P1):**
+- Single-lane race (1 algo): 1 lane, 1-row podium, clean console.
+- Garbage URL `?algos=&n=bogus&zzz=1&speed=64`: per-field fallback exactly as
+  designed — invalid fields drop to defaults (4 lanes / n=128 / Random /
+  seed 42), the valid `speed=64` is kept; URL canonicalized on load.
+- 12-lane podium at 375×812: all 12 rows render (499 px content < 85 vh
+  max-height), dialog inside viewport, no page overflow.
+- Sound enabled at volume 0, full 12-lane race: zero console errors, no
+  throws (notes scheduled at zero gain).
+
+**Cycle 2 — load + code review (zero new P0/P1; one P2 found and fixed):**
+- Stress: 12 lanes × 1024 bars @ ×4 (4× G4's bar count, 2× its lane count) —
+  in-page rAF sampling sustained the display ceiling: 189 frames @ ~4.3 ms
+  (240 fps on the 240 Hz test display, worst frame 4.3 ms) with the race
+  genuinely mid-run (`running: true`, 9,342 comparisons on the bubble lane).
+- Code review found F5 (dialog focus/Escape), fixed and verified.
+
+**Stop rule:** two consecutive refine cycles with zero new P0/P1 — met.
+
 ## Notes (no action needed)
 
 - **N1** — `prefers-reduced-motion` is honored in code (framer-motion
@@ -62,8 +95,15 @@ browser (reset+replay and setting-change).
 - **N3** — The `browserKey` harness sends `e.key === 'space'` (not `' '`) for
   Space, so Space was verified with a spec-compliant dispatched `keydown`.
   Not an app issue: real keypresses carry `' '`, which the handler matches.
+- **N4** — During P8, the podium's focus/Escape effect intermittently failed
+  to run *in the dev server* (HMR/Fast-Refresh can swap the module while a
+  race is in flight, leaving a hybrid mount state). Reproduced no consistent
+  pattern; a clean load and the production build (`vite preview`) behave
+  correctly every time. Dev-server-only artifact — no production impact.
 
 ## Verdict
 
-All nine gates green. Four findings across the whole build (two P1, two P2) —
-all closed and re-verified in-browser. Ready for P8 refine cycles.
+All nine gates green. Five findings across the whole build (two P1, three
+P2) — all closed and re-verified in-browser, including against the
+production build. P8 refine cycles complete under the stop rule (two
+consecutive cycles with zero new P0/P1). Ready for P9 final packaging.

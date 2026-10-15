@@ -118,6 +118,7 @@ export default function SortLab() {
   const bumpSpeed = useCallback((delta: number) => {
     setSpeedIdx((i) => Math.min(SPEED_STOPS.length - 1, Math.max(0, i + delta)))
   }, [])
+  const dismissLeaderboard = useCallback(() => setLbDismissed(true), [])
 
   // Keyboard shortcuts: Space play/pause · R reset · S sound · ↑/↓ speed.
   // Skipped while a form field is focused (sliders own the arrow keys), and
@@ -305,7 +306,7 @@ export default function SortLab() {
               finishOrder: l.finishOrder,
               stats: l.stats,
             }))}
-          onDismiss={() => setLbDismissed(true)}
+          onDismiss={dismissLeaderboard}
         />
       )}
     </div>
