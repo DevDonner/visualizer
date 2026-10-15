@@ -23,13 +23,13 @@
 | P2 12-algorithm library | ✅ done |
 | P3 renderer + scheduler | ✅ done |
 | P4 UI controls | ✅ done |
-| P5 audio | 🔄 ACTIVE |
-| P6 leaderboard/URL/a11y | ⬜ |
+| P5 audio | ✅ done |
+| P6 leaderboard/URL/a11y | 🔄 ACTIVE |
 | P7 review | ⬜ |
 | P8 refine | ⬜ |
 | P9 final analysis + report | ⬜ |
 
-**ACTIVE: P5**
+**ACTIVE: P6**
 
 ## Log
 
@@ -124,3 +124,25 @@
   ~257 ms (faster than a CDP round-trip), and the 4 Hz DOM re-render lags the rAF
   clock, so a stale baseline read looked like "the pause didn't hold". Slowing the
   race (n=1024 × 0.25) and comparing a lane against itself across samples resolves it.
+
+### 2026-10-15 (night) — P5 complete (`6f517e1`)
+- `audio/engine.ts` — `SoundEngine`, fully synthesized Web Audio (no assets, no
+  network). AudioContext created/resumed **only inside the enable gesture**
+  (autoplay-policy safe), suspended on disable; every scheduled source
+  self-disconnects on `ended`, so disabling mid-run or `dispose()` never throws
+  or leaks nodes. Bar value → C-major pentatonic (3 octaves over A3) with a
+  per-lane offset (bounded to one octave, 12 distinct pitches) so simultaneous
+  lanes never pitch-stack. Compare = quiet sine blip, swap = louder triangle
+  blip, finish = ascending C-E-G arpeggio; exponential-decay envelopes into a
+  shared low-pass + master gain, capped at 24 notes/frame (fast races become
+  texture, not a wall of clicks).
+- `scheduler.ts` gained a decoupled `ActionSink` (`beginFrame`/`onAction`), fed
+  from the `tick` and `stepOnce` loops. Structural typing keeps the scheduler
+  audio-free and node-testable (tests construct it with no sink).
+- Control panel: SOUND on/off toggle (gesture-driven), volume slider, and a
+  compare/swap/both segmented mode control.
+- `test/audio.test.ts`: pure pentatonic mapping (bounds, monotonicity, scale
+  membership, 12 distinct lane pitches, [0,1] clamping). 43/43 green.
+- Browser-verified (G7): enable in gesture → disable **mid-run** → re-enable →
+  volume + mode changes → full race to completion. Zero console errors, no
+  autoplay-policy warnings, final stats identical to the engine.
