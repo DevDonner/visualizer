@@ -24,12 +24,12 @@
 | P3 renderer + scheduler | ✅ done |
 | P4 UI controls | ✅ done |
 | P5 audio | ✅ done |
-| P6 leaderboard/URL/a11y | 🔄 ACTIVE |
+| P6 leaderboard/URL/a11y | ✅ done |
 | P7 review | ⬜ |
 | P8 refine | ⬜ |
 | P9 final analysis + report | ⬜ |
 
-**ACTIVE: P6**
+**ACTIVE: P7**
 
 ## Log
 
@@ -146,3 +146,33 @@
 - Browser-verified (G7): enable in gesture → disable **mid-run** → re-enable →
   volume + mode changes → full race to completion. Zero console errors, no
   autoplay-policy warnings, final stats identical to the engine.
+
+### 2026-10-15 (night) — P6 complete (`86efc60`)
+- `ui/urlState.ts` — pure `?algos&n&dist&speed&seed` parser/serializer: invalid
+  fields drop individually (a bad `seed` never nukes a valid `algos` list), algo
+  ids validated against the registry and normalized to registry order. Node-tested
+  (5 cases, incl. round-trip).
+- Root `index.tsx` — URL read on init + `replaceState` write on every config
+  change (shareable/reproducible races); keyboard shortcuts Space/R/S/↑↓ that
+  step aside for focused form fields (sliders own the arrows) and leave native
+  Space activation on focused buttons alone; `role=status` aria-live region
+  (ready → running with per-lane finish counts → complete); `window.__SORTLAB__`
+  debug seam — `getState()`, `forceStepAll()`, and `snapshot()` (per-lane
+  done + is-the-array-sorted + stats), so browser verification no longer guesses
+  from pixels.
+- `ui/Leaderboard.tsx` — podium overlay when every lane finishes: rows ordered
+  by finish time, ★ on the winner, final compares/swaps/writes, dismissible via
+  button or backdrop; framer-motion entrance skipped under
+  `prefers-reduced-motion`.
+- **Bug found in browser verification + fixed:** the podium re-arm originally
+  sampled `allDone` at 4 Hz, but a fast race (×64, n=16) finishes in <100 ms —
+  between samples — so after dismiss → reset → replay the podium could stay
+  stuck off. Re-arm is now deterministic: scheduler (re)creation and explicit
+  reset both reset the dismissal flag. Verified: re-arms on reset+replay *and*
+  on setting change.
+- `LanePanel` — one-shot accent flash on lane finish (framer-motion, gated by
+  `useReducedMotion`); `ControlPanel` — shortcut-hint line on wide screens;
+  `scheduler.laneValues(li)` accessor for the seam.
+- Browser-verified (G6): deep-link parse, URL write, all four shortcuts, podium
+  show/dismiss/re-arm both paths, `snapshot()` all done+sorted, zero console
+  errors on fresh load. 48/48 tests.
