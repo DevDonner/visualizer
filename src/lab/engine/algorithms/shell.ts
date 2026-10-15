@@ -16,10 +16,18 @@ export function createShell(values: number[]): SortRunner {
   let i = gaps[0]
   let j = gaps[0]
   let finished = false
+  const pending: Action[] = []
 
   function step(): Action | null {
     if (finished) return null
     for (;;) {
+      const queued = pending.shift()
+      if (queued) {
+        if (queued.kind === 'swap') {
+          ;[a[queued.i], a[queued.j]] = [a[queued.j], a[queued.i]]
+        }
+        return queued
+      }
       if (gi >= gaps.length) {
         finished = true
         return { kind: 'done' }
@@ -30,9 +38,11 @@ export function createShell(values: number[]): SortRunner {
           const i1 = j - gap
           const i2 = j
           if (a[i1] > a[i2]) {
-            ;[a[i1], a[i2]] = [a[i2], a[i1]]
+            // Count the comparison now; the swap is emitted next step and the
+            // mutation is applied when it is dequeued (see above).
+            pending.push({ kind: 'swap', i: i1, j: i2 })
             j -= gap
-            return { kind: 'swap', i: i1, j: i2 }
+            return { kind: 'compare', i: i1, j: i2 }
           }
           i++
           j = i

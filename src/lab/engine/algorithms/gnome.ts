@@ -19,7 +19,12 @@ export function createGnome(values: number[]): SortRunner {
     if (finished) return null
     for (;;) {
       const queued = pending.shift()
-      if (queued) return queued
+      if (queued) {
+        if (queued.kind === 'swap') {
+          ;[a[queued.i], a[queued.j]] = [a[queued.j], a[queued.i]]
+        }
+        return queued
+      }
       if (pos >= n) {
         finished = true
         return { kind: 'done' }
@@ -31,9 +36,11 @@ export function createGnome(values: number[]): SortRunner {
       const i1 = pos - 1
       const i2 = pos
       if (a[i1] > a[i2]) {
-        ;[a[i1], a[i2]] = [a[i2], a[i1]]
+        // Count the comparison now; the swap is emitted next step and the
+        // mutation is applied when it is dequeued (see above).
+        pending.push({ kind: 'swap', i: i1, j: i2 })
         pos--
-        return { kind: 'swap', i: i1, j: i2 }
+        return { kind: 'compare', i: i1, j: i2 }
       }
       pos++
       pending.push({ kind: 'sorted', i: i2 })
