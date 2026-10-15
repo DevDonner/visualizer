@@ -26,10 +26,10 @@
 | P5 audio | ✅ done |
 | P6 leaderboard/URL/a11y | ✅ done |
 | P7 review | ✅ done |
-| P8 refine | ⬜ |
+| P8 refine | ✅ done |
 | P9 final analysis + report | ⬜ |
 
-**ACTIVE: P8**
+**ACTIVE: P9**
 
 ## Log
 
@@ -191,3 +191,15 @@
   `sorted` / `sortedByKey` / per-lane `contract`; 12-lane re-run allContract.
 - G8 grep gate: all 88 in-lab imports stay inside `src/lab` or are
   react/framer-motion. G9: no TODOs, strict tsc clean, JSDoc on public API.
+
+### 2026-10-15 (night) — P8 complete (`2d78739`)
+- Two refine cycles, zero new P0/P1 → stop rule met.
+- Cycle 1 (edge cases): single-lane race; garbage URL per-field fallback
+  (`?algos=&n=bogus&zzz=1&speed=64` → defaults except valid speed kept);
+  12-lane podium at 375×812 fits; volume-0 audio clean.
+- Cycle 2 (load + review): 12 lanes × 1024 bars @ ×4 held the display
+  ceiling (~240 fps / ~4.3 ms worst frame) mid-race.
+- F5 (P2) found + fixed: leaderboard `role=dialog` now focuses the Close
+  button on open and closes on Escape (non-modal by design); stable
+  `dismissLeaderboard` callback. Verified in dev and in the production
+  build (`vite preview`); dev-only HMR flakiness recorded as N4.
