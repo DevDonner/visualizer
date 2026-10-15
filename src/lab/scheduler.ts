@@ -32,6 +32,10 @@ export interface LaneRuntime {
   done: boolean
   /** 1-based finish position; 0 while running. */
   finishOrder: number
+  /** Wall-clock ms from race start when the lane finished; null while running. */
+  finishMs: number | null
+  /** Manually paused from the per-lane control. */
+  paused: boolean
 }
 
 function freshStats(): SortStats {
@@ -54,6 +58,8 @@ export class RaceScheduler {
   private isRunning = false
   private speed = 1
   private finishedCount = 0
+  /** Wall-clock origin of the current race; null before the first start. */
+  private startedAt: number | null = null
 
   constructor(data: number[], inits: LaneInit[]) {
     this.data = data
@@ -63,6 +69,8 @@ export class RaceScheduler {
       stats: freshStats(),
       done: false,
       finishOrder: 0,
+      finishMs: null,
+      paused: false,
     }))
     this.runners = []
     this.frameStates = []
@@ -81,6 +89,7 @@ export class RaceScheduler {
   start(): void {
     if (this.isRunning || this.allDone) return
     this.isRunning = true
+    if (this.startedAt === null) this.startedAt = performance.now()
     this.raf = requestAnimationFrame(this.tick)
   }
 
@@ -102,6 +111,29 @@ export class RaceScheduler {
 
   getSpeed(): number {
     return this.speed
+  }
+
+  /** Toggle a lane's manual pause. Unpausing revives the rAF loop if the
+   *  race should still be running (all-lanes-paused stops the loop). */
+  togglePauseLane(li: number): void {
+    const lane = this.lanes[li]
+    if (!lane || lane.done) return
+    lane.paused = !lane.paused
+    if (!lane.paused && !this.isRunning && !this.allDone) this.start()
+  }
+
+  /** Rebuild one lane's runner in place — the per-lane reset control. */
+  resetLane(li: number): void {
+    const lane = this.lanes[li]
+    if (!lane) return
+    this.runners[li] = lane.algo.create(this.data)
+    this.frameStates[li] = createFrameState(this.data.length)
+    zeroStats(lane.stats)
+    lane.done = false
+    lane.finishOrder = 0
+    lane.finishMs = null
+    lane.paused = false
+    lane.renderer.draw(this.runners[li].values(), this.frameStates[li])
   }
 
   /** One action per lane — the manual Step control (works while paused). */
@@ -132,8 +164,11 @@ export class RaceScheduler {
       zeroStats(this.lanes[li].stats)
       this.lanes[li].done = false
       this.lanes[li].finishOrder = 0
+      this.lanes[li].finishMs = null
+      this.lanes[li].paused = false
     }
     this.finishedCount = 0
+    this.startedAt = null
     this.paintAll()
   }
 
@@ -166,6 +201,7 @@ export class RaceScheduler {
       case 'done':
         lane.done = true
         lane.finishOrder = ++this.finishedCount
+        lane.finishMs = this.startedAt === null ? 0 : performance.now() - this.startedAt
         fs.hi1 = -1
         fs.hi2 = -1
         fs.pivot = -1
@@ -181,7 +217,7 @@ export class RaceScheduler {
     let anyActive = false
     for (let li = 0; li < this.lanes.length; li++) {
       const lane = this.lanes[li]
-      if (lane.done) continue
+      if (lane.done || lane.paused) continue
       anyActive = true
       const runner = this.runners[li]
       const fs = this.frameStates[li]
