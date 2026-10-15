@@ -23,6 +23,18 @@ export interface LaneInit {
   hue: number
 }
 
+/**
+ * Optional sink the scheduler pushes its action stream to (the sound engine
+ * implements this). Structural, so the scheduler stays decoupled from audio —
+ * node tests construct a scheduler without one. `value` is the live bar value
+ * at the action's primary index (compare/swap), 0 otherwise.
+ */
+export interface ActionSink {
+  /** Called once per rAF frame before any actions of that frame. */
+  beginFrame(): void
+  onAction(li: number, a: Action, value: number): void
+}
+
 export interface LaneRuntime {
   algo: SortAlgorithm
   renderer: LaneRenderer
@@ -49,6 +61,14 @@ function zeroStats(s: SortStats): void {
   s.steps = 0
 }
 
+/** The live bar value the sound engine should sonify for this action (0 otherwise). */
+function soundValue(vals: number[], a: Action): number {
+  if (a.kind === 'compare' || a.kind === 'swap' || a.kind === 'write' || a.kind === 'pivot') {
+    return vals[a.i]
+  }
+  return 0
+}
+
 export class RaceScheduler {
   readonly lanes: LaneRuntime[]
   private readonly runners: SortRunner[]
@@ -60,9 +80,11 @@ export class RaceScheduler {
   private finishedCount = 0
   /** Wall-clock origin of the current race; null before the first start. */
   private startedAt: number | null = null
+  private sink: ActionSink | null
 
-  constructor(data: number[], inits: LaneInit[]) {
+  constructor(data: number[], inits: LaneInit[], sink: ActionSink | null = null) {
     this.data = data
+    this.sink = sink
     this.lanes = inits.map((init) => ({
       algo: init.algo,
       renderer: new LaneRenderer(init.canvas, init.hue),
@@ -139,13 +161,16 @@ export class RaceScheduler {
   /** One action per lane — the manual Step control (works while paused). */
   stepOnce(): void {
     if (this.allDone) return
+    this.sink?.beginFrame()
     for (let li = 0; li < this.lanes.length; li++) {
       const lane = this.lanes[li]
       if (lane.done) continue
+      const vals = this.runners[li].values()
       const a = this.runners[li].step()
       if (a === null) continue
       countAction(lane.stats, a)
       this.applyAction(lane, this.frameStates[li], a)
+      this.sink?.onAction(li, a, soundValue(vals, a))
     }
     this.paintAll()
   }
@@ -213,6 +238,7 @@ export class RaceScheduler {
 
   private readonly tick = (): void => {
     if (!this.isRunning) return
+    this.sink?.beginFrame()
     const budget = Math.max(1, Math.round(BASE_BUDGET * this.speed))
     let anyActive = false
     for (let li = 0; li < this.lanes.length; li++) {
@@ -221,12 +247,14 @@ export class RaceScheduler {
       anyActive = true
       const runner = this.runners[li]
       const fs = this.frameStates[li]
+      const vals = runner.values()
       let used = 0
       while (used < budget) {
         const a = runner.step()
         if (a === null) break
         countAction(lane.stats, a)
         this.applyAction(lane, fs, a)
+        this.sink?.onAction(li, a, soundValue(vals, a))
         used++
         if (lane.done) break
       }

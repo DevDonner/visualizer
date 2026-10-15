@@ -3,6 +3,7 @@ import type { Distribution } from './engine/types.ts'
 import { ALGORITHMS } from './engine/registry.ts'
 import { makeData } from './engine/data.ts'
 import type { RaceScheduler } from './scheduler.ts'
+import { SoundEngine, type SoundMode } from './audio/engine.ts'
 import {
   DEFAULT_DIST,
   DEFAULT_SELECTED,
@@ -34,6 +35,16 @@ export default function SortLab() {
   const [dist, setDist] = useState<Distribution>(DEFAULT_DIST)
   const [seed, setSeed] = useState(42)
   const [speedIdx, setSpeedIdx] = useState(DEFAULT_SPEED_IDX)
+
+  // Sound — the engine outlives scheduler (re)creations; its AudioContext is
+  // created lazily inside the enable gesture (autoplay-policy safe) and
+  // re-created on demand after dispose (StrictMode-safe).
+  const soundRef = useRef<SoundEngine | null>(null)
+  if (soundRef.current === null) soundRef.current = new SoundEngine()
+  const [soundOn, setSoundOn] = useState(false)
+  const [volume, setVolume] = useState(60) // 0..100
+  const [soundMode, setSoundMode] = useState<SoundMode>('both')
+  useEffect(() => () => soundRef.current?.dispose(), [])
 
   const selected = useMemo(
     () => new Set(selectedKey ? selectedKey.split(',') : []),
@@ -104,6 +115,22 @@ export default function SortLab() {
         onShuffle={shuffle}
         speedIdx={speedIdx}
         onSpeedIdx={setSpeedIdx}
+        soundOn={soundOn}
+        onToggleSound={() => {
+          const next = !soundOn
+          soundRef.current?.setEnabled(next) // inside the click gesture
+          setSoundOn(next)
+        }}
+        volume={volume}
+        onVolume={(v) => {
+          soundRef.current?.setVolume(v / 100)
+          setVolume(v)
+        }}
+        soundMode={soundMode}
+        onSoundMode={(m) => {
+          soundRef.current?.setMode(m)
+          setSoundMode(m)
+        }}
       />
 
       <div className="flex-1 overflow-y-auto">
@@ -113,6 +140,7 @@ export default function SortLab() {
             algos={algos}
             data={data}
             speed={SPEED_STOPS[speedIdx]}
+            sound={soundRef.current}
             onScheduler={onScheduler}
           />
         </div>

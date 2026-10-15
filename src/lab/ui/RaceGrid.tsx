@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SortAlgorithm } from '../engine/types.ts'
-import { RaceScheduler, type LaneInit } from '../scheduler.ts'
+import { RaceScheduler, type ActionSink, type LaneInit } from '../scheduler.ts'
 import { algoHue } from '../theme.ts'
 import { LanePanel } from './LanePanel.tsx'
 
@@ -16,10 +16,12 @@ export interface RaceGridProps {
   algos: SortAlgorithm[]
   data: number[]
   speed: number
+  /** Optional action sink (sound engine); stable for the app's lifetime. */
+  sound: ActionSink | null
   onScheduler: (s: RaceScheduler | null) => void
 }
 
-export function RaceGrid({ algos, data, speed, onScheduler }: RaceGridProps) {
+export function RaceGrid({ algos, data, speed, sound, onScheduler }: RaceGridProps) {
   const canvasRefs = useRef(new Map<string, HTMLCanvasElement>())
   const schedRef = useRef<RaceScheduler | null>(null)
   const speedRef = useRef(speed)
@@ -35,7 +37,7 @@ export function RaceGrid({ algos, data, speed, onScheduler }: RaceGridProps) {
       onScheduler(null)
       return
     }
-    const sched = new RaceScheduler(data, inits)
+    const sched = new RaceScheduler(data, inits, sound)
     sched.setSpeed(speedRef.current)
     schedRef.current = sched
     onScheduler(sched)
@@ -52,7 +54,8 @@ export function RaceGrid({ algos, data, speed, onScheduler }: RaceGridProps) {
       schedRef.current = null
       onScheduler(null)
     }
-    // onScheduler is stable (root useCallback) — deliberately excluded from deps.
+    // onScheduler (root useCallback) and sound (root ref) are stable —
+    // deliberately excluded from deps.
   }, [algos, data])
 
   useEffect(() => {
