@@ -27,9 +27,9 @@
 | P6 leaderboard/URL/a11y | ✅ done |
 | P7 review | ✅ done |
 | P8 refine | ✅ done |
-| P9 final analysis + report | ⬜ |
+| P9 final analysis + report | ✅ done |
 
-**ACTIVE: P9**
+**Status: complete — all phases done, stop rule met.**
 
 ## Log
 
@@ -203,3 +203,12 @@
   button on open and closes on Escape (non-modal by design); stable
   `dismissLeaderboard` callback. Verified in dev and in the production
   build (`vite preview`); dev-only HMR flakiness recorded as N4.
+
+### 2026-10-15 (night) — P9 complete
+- `meta.ts` flipped to `status: 'live'`.
+- `README.md`: overview, the twelve, run instructions, architecture,
+  verification pointer, and lift-into-portfolio instructions (zero-change
+  copy of `src/lab/` per `portfolio/LABS.md`).
+- `screenshots/`: hero-1440, leaderboard-1440, mobile-375 (browser captures).
+- Final decision: **stop** — all gates green, stop rule met (two consecutive
+  zero-new-P0/P1 refine cycles), 48/48 tests, build clean.
