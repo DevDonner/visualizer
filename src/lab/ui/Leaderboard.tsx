@@ -23,6 +23,11 @@ function fmt(n: number): string {
   return n >= 10000 ? `${(n / 1000).toFixed(1)}k` : String(n)
 }
 
+/** Milliseconds without performance.now() float noise (31.2, 256.2, …). */
+function fmtMs(ms: number): string {
+  return String(Math.round(ms * 10) / 10)
+}
+
 export function Leaderboard({ rows, onDismiss }: LeaderboardProps) {
   const reduce = useReducedMotion()
   const ordered = [...rows].sort((a, b) => a.finishOrder - b.finishOrder)
@@ -38,7 +43,7 @@ export function Leaderboard({ rows, onDismiss }: LeaderboardProps) {
         initial={reduce ? false : { opacity: 0, y: 16, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="w-full max-w-xl rounded-2xl border border-edge bg-surface p-5 shadow-2xl"
+        className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-edge bg-surface p-5 shadow-2xl"
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-base font-semibold text-white">Leaderboard</h2>
@@ -51,7 +56,8 @@ export function Leaderboard({ rows, onDismiss }: LeaderboardProps) {
             ✕ Close
           </button>
         </div>
-        <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[420px] text-left text-xs">
           <thead>
             <tr className="text-[10px] uppercase tracking-wider text-mute">
               <th className="pb-2 pr-2 font-medium">rank</th>
@@ -82,7 +88,7 @@ export function Leaderboard({ rows, onDismiss }: LeaderboardProps) {
                   </span>
                 </td>
                 <td className="py-2 pr-2 text-right tabular-nums text-slate-200">
-                  {fmt(row.finishMs)} ms
+                  {fmtMs(row.finishMs)} ms
                 </td>
                 <td className="py-2 pr-2 text-right tabular-nums text-slate-200">
                   {fmt(row.stats.comparisons)}
@@ -95,6 +101,7 @@ export function Leaderboard({ rows, onDismiss }: LeaderboardProps) {
             ))}
           </tbody>
         </table>
+        </div>
       </motion.div>
     </div>
   )

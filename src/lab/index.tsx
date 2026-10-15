@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Distribution } from './engine/types.ts'
 import { ALGORITHMS } from './engine/registry.ts'
 import { makeData } from './engine/data.ts'
+import { radixKey } from './engine/algorithms/radix.ts'
 import type { RaceScheduler } from './scheduler.ts'
 import { SoundEngine, type SoundMode } from './audio/engine.ts'
 import {
@@ -203,13 +204,16 @@ export default function SortLab() {
           lanes: s.lanes.map((l, i) => {
             const v = s.laneValues(i)
             let sorted = true
+            // radix sorts by 16-bit key, not exact double order (documented
+            // contract) — check both, per lane.
+            let sortedByKey = true
             for (let k = 1; k < v.length; k++) {
-              if (v[k - 1] > v[k]) {
-                sorted = false
-                break
-              }
+              if (v[k - 1] > v[k]) sorted = false
+              if (radixKey(v[k - 1]) > radixKey(v[k])) sortedByKey = false
+              if (!sorted && !sortedByKey) break
             }
-            return { algo: l.algo.id, done: l.done, sorted, stats: { ...l.stats } }
+            const contract = l.algo.id === 'radix' ? sortedByKey : sorted
+            return { algo: l.algo.id, done: l.done, sorted, sortedByKey, contract, stats: { ...l.stats } }
           }),
         }
       },

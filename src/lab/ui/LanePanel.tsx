@@ -20,6 +20,11 @@ function fmt(n: number): string {
   return n >= 10000 ? `${(n / 1000).toFixed(1)}k` : String(n)
 }
 
+/** Milliseconds without performance.now() float noise (31.2, 256.2, …). */
+function fmtMs(ms: number): string {
+  return String(Math.round(ms * 10) / 10)
+}
+
 export function LanePanel({ algo, lane, registerCanvas, onTogglePause, onResetLane }: LanePanelProps) {
   const hue = algoHue(algo.id)
   const done = lane?.done ?? false
@@ -48,7 +53,7 @@ export function LanePanel({ algo, lane, registerCanvas, onTogglePause, onResetLa
         </span>
         {done && (
           <span className="text-xs font-semibold text-accent">
-            ✓ #{lane?.finishOrder} · {fmt(lane?.finishMs ?? 0)} ms
+            ✓ #{lane?.finishOrder} · {fmtMs(lane?.finishMs ?? 0)} ms
           </span>
         )}
         <div className="ml-auto flex items-center gap-1">
@@ -86,7 +91,7 @@ export function LanePanel({ algo, lane, registerCanvas, onTogglePause, onResetLa
         <Stat label="comparisons" value={fmt(lane?.stats.comparisons ?? 0)} />
         <Stat label="swaps" value={fmt(lane?.stats.swaps ?? 0)} />
         <Stat label="writes" value={fmt(lane?.stats.writes ?? 0)} />
-        <Stat label={done ? 'elapsed' : 'steps'} value={done ? `${fmt(lane?.finishMs ?? 0)} ms` : fmt(lane?.stats.steps ?? 0)} />
+        <Stat label={done ? 'elapsed' : 'steps'} value={done ? `${fmtMs(lane?.finishMs ?? 0)} ms` : fmt(lane?.stats.steps ?? 0)} />
       </dl>
     </motion.section>
   )

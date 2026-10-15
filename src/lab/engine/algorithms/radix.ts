@@ -6,6 +6,13 @@ import { doneRunner } from '../runner.ts'
  * with two stable counting-sort passes, low byte first. Linear time for
  * bounded integer keys; no comparisons of elements at all.
  */
+/**
+ * The 16-bit key radix sorts by. Distinct doubles within 1/65535 share a key,
+ * so the guarantee is stable non-decreasing *key* order — not exact double
+ * order. Exported so the debug seam can assert the contract directly.
+ */
+export const radixKey = (v: number): number => Math.round(v * 65535)
+
 export function createRadix(values: number[]): SortRunner {
   const a = values.slice()
   const n = a.length
@@ -13,7 +20,7 @@ export function createRadix(values: number[]): SortRunner {
 
   // Keys must be derived from the CURRENT position each pass: LSD reorders
   // the array, so a precomputed per-index key array would go stale.
-  const keyOf = (v: number) => Math.round(v * 65535)
+  const keyOf = radixKey
   const aux = new Array<number>(n)
   const count = new Int32Array(256)
   const offset = new Int32Array(257)
