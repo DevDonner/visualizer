@@ -64,6 +64,6 @@ export interface SortStats {
   comparisons: number
   swaps: number
   writes: number
-  /** Total visible actions (compares + swaps + writes). */
+  /** Total actions consumed (every kind, including `done`). */
   steps: number
 }

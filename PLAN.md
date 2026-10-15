@@ -100,8 +100,13 @@ type Action =
   | { kind: 'pivot'; i: number }
   | { kind: 'range'; lo: number; hi: number }    // active sub-range (visual dimming)
   | { kind: 'sorted'; i: number }
-  | { kind: 'done'; comparisons: number; swaps: number; writes: number; steps: number }
+  | { kind: 'done' }                              // NO payload — stats are derived
 ```
+
+`done` is deliberately payload-free: stats are derived from the action stream by the
+consumer (test driver or live scheduler) via `engine/run.ts → countAction()` —
+one source of truth, no double counting. (Implemented P1; supersedes the original
+payload sketch.)
 
 One model feeds renderer, audio, and stats identically → deterministic, testable.
 The React layer only re-renders ~4×/s for stat text; the scheduler mutates canvas
