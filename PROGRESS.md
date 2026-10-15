@@ -21,15 +21,15 @@
 | P0 scaffold + toolchain | ✅ done |
 | P1 engine core | ✅ done |
 | P2 12-algorithm library | ✅ done |
-| P3 renderer + scheduler | 🔄 ACTIVE |
-| P4 UI controls | ⬜ |
-| P5 audio | ⬜ |
+| P3 renderer + scheduler | ✅ done |
+| P4 UI controls | ✅ done |
+| P5 audio | 🔄 ACTIVE |
 | P6 leaderboard/URL/a11y | ⬜ |
 | P7 review | ⬜ |
 | P8 refine | ⬜ |
 | P9 final analysis + report | ⬜ |
 
-**ACTIVE: P3**
+**ACTIVE: P5**
 
 ## Log
 
@@ -91,3 +91,36 @@
 - **Next (P3):** renderer (bars from action stream, per-action animation state) +
   scheduler (speed control, batch steps per frame, rAF loop) — keep `src/lab/`
   self-contained; replace skeleton in `src/lab/index.tsx` during P4.
+
+### 2026-10-15 (night) — P3 complete (`e778818`)
+- `theme.ts` (per-algo hue, portfolio tokens), `render/renderer.ts` (`LaneRenderer`:
+  single-pass batched bar draw, DPR-aware `resize()`, lazy `fillStyle` switching),
+  `scheduler.ts` (`RaceScheduler`: one rAF loop, per-lane step budget
+  `BASE_BUDGET × speed`, self-stops when every lane is done).
+- Browser-verified: 4 lanes render/animate in lockstep (~240 fps), zero console
+  errors, textbook stats (selection n=128 = 8128 comps), clean rest-state pixels,
+  finish markers + done tone.
+
+### 2026-10-15 (night) — P4 complete + engine stat fix
+- **engine fix (`b43552f`):** the compare-driven sorts (bubble/cocktail/gnome/
+  insertion/shell) only emitted a `compare` on the no-swap branch, so every
+  comparison that resolved to a swap was uncounted (reversed bubble showed c=0).
+  Now the compare is emitted at decision, the swap is queued, and the array mutation
+  is applied when the swap is dequeued (mutate-at-emit contract preserved). Stats now
+  match textbook: reversed n=128 → c=sw=n(n−1)/2 (bubble/cocktail/insertion),
+  gnome c=2·n(n−1)/2. Verified end-to-end in-browser (final stats identical to the
+  node dump: 7880/3770, 3894/3770, 899/374, 751/1461).
+- **P4 (`79562b1`):** `ui/` (AlgoPicker, ControlPanel, RaceGrid, LanePanel,
+  constants), root `index.tsx` (race config + 4 Hz transport tick; lanes self-poll
+  stats at 4 Hz), scheduler per-lane `togglePauseLane`/`resetLane` + `finishMs`/
+  `startedAt`, and `test/scheduler.test.ts`. 39/39 green.
+- Per-lane pause verified two ways: (a) deterministic node tests (6/6 — paused lane
+  frozen while others advance and cannot finish; all-paused halts the loop, unpause
+  revives it; `resetLane` rebuilds one lane; distinct finishOrder 1..n); (b) live
+  browser at n=1024 × 0.25 — bubble frozen byte-identical across samples while
+  insertion kept advancing.
+- **Root cause of the earlier "inconclusive" browser pause attempts:** a test-harness
+  clock mismatch, NOT an app bug. At the default ×8 speed the whole race finishes in
+  ~257 ms (faster than a CDP round-trip), and the 4 Hz DOM re-render lags the rAF
+  clock, so a stale baseline read looked like "the pause didn't hold". Slowing the
+  race (n=1024 × 0.25) and comparing a lane against itself across samples resolves it.
