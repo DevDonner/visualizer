@@ -165,6 +165,13 @@ export const ControlPanel = memo(function ControlPanel(p: ControlPanelProps) {
           ))}
         </div>
       </LabeledGroup>
+
+      <span className="ml-auto hidden items-center gap-1 text-[10px] text-mute xl:flex" aria-hidden>
+        <kbd className="rounded border border-edge bg-ink/40 px-1 py-0.5">Space</kbd> play/pause
+        <kbd className="rounded border border-edge bg-ink/40 px-1 py-0.5">R</kbd> reset
+        <kbd className="rounded border border-edge bg-ink/40 px-1 py-0.5">S</kbd> sound
+        <kbd className="rounded border border-edge bg-ink/40 px-1 py-0.5">↑↓</kbd> speed
+      </span>
     </div>
   )
 })

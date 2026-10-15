@@ -158,6 +158,11 @@ export class RaceScheduler {
     lane.renderer.draw(this.runners[li].values(), this.frameStates[li])
   }
 
+  /** A lane's live array — the debug seam uses it to prove "bars are sorted". */
+  laneValues(li: number): number[] {
+    return this.runners[li]?.values() ?? []
+  }
+
   /** One action per lane — the manual Step control (works while paused). */
   stepOnce(): void {
     if (this.allDone) return

@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from 'framer-motion'
 import type { SortAlgorithm } from '../engine/types.ts'
 import type { LaneRuntime } from '../scheduler.ts'
 import { algoHue } from '../theme.ts'
@@ -23,8 +24,18 @@ export function LanePanel({ algo, lane, registerCanvas, onTogglePause, onResetLa
   const hue = algoHue(algo.id)
   const done = lane?.done ?? false
   const paused = lane?.paused ?? false
+  const reduce = useReducedMotion()
   return (
-    <section className="rounded-2xl border border-edge bg-surface p-4" aria-label={`${algo.name} lane`}>
+    <motion.section
+      className="rounded-2xl border border-edge bg-surface p-4"
+      aria-label={`${algo.name} lane`}
+      animate={
+        done && !reduce
+          ? { boxShadow: ['0 0 0 0px transparent', '0 0 0 2px var(--color-accent)', '0 0 0 0px transparent'] }
+          : { boxShadow: '0 0 0 0px transparent' }
+      }
+      transition={{ duration: 0.9, ease: 'easeOut' }}
+    >
       <header className="mb-3 flex items-center gap-2">
         <span
           className="h-2.5 w-2.5 shrink-0 rounded-full"
@@ -77,7 +88,7 @@ export function LanePanel({ algo, lane, registerCanvas, onTogglePause, onResetLa
         <Stat label="writes" value={fmt(lane?.stats.writes ?? 0)} />
         <Stat label={done ? 'elapsed' : 'steps'} value={done ? `${fmt(lane?.finishMs ?? 0)} ms` : fmt(lane?.stats.steps ?? 0)} />
       </dl>
-    </section>
+    </motion.section>
   )
 }
 
