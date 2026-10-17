@@ -62,7 +62,7 @@ export function LanePanel({ algo, lane, registerCanvas, onTogglePause, onResetLa
             onClick={onTogglePause}
             disabled={done}
             aria-label={paused ? `Resume ${algo.name} lane` : `Pause ${algo.name} lane`}
-            className="rounded-md border border-edge bg-ink/40 px-2 py-1 text-xs text-mute transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-md border border-edge bg-ink/40 px-2 py-1 text-xs text-mute transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40 sm:min-h-8 sm:min-w-8"
           >
             {paused ? '▶' : '⏸'}
           </button>
@@ -71,7 +71,7 @@ export function LanePanel({ algo, lane, registerCanvas, onTogglePause, onResetLa
             onClick={onResetLane}
             disabled={done}
             aria-label={`Reset ${algo.name} lane`}
-            className="rounded-md border border-edge bg-ink/40 px-2 py-1 text-xs text-mute transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-md border border-edge bg-ink/40 px-2 py-1 text-xs text-mute transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40 sm:min-h-8 sm:min-w-8"
           >
             ↺
           </button>

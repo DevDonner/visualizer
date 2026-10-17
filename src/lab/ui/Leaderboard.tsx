@@ -68,7 +68,7 @@ export function Leaderboard({ rows, onDismiss }: LeaderboardProps) {
             type="button"
             onClick={onDismiss}
             aria-label="Close leaderboard"
-            className="rounded-md border border-edge bg-ink/40 px-2 py-1 text-xs text-mute transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-accent"
+            className="min-h-11 rounded-md border border-edge bg-ink/40 px-2 py-1 text-xs text-mute transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-accent sm:min-h-0"
           >
             ✕ Close
           </button>

@@ -31,7 +31,7 @@ export interface ControlPanelProps {
 
 export const ControlPanel = memo(function ControlPanel(p: ControlPanelProps) {
   const btn =
-    'rounded-lg border border-edge bg-surface px-4 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:border-accent/60 hover:text-white focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40'
+    'min-h-11 rounded-lg border border-edge bg-surface px-4 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:border-accent/60 hover:text-white focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40 sm:min-h-0'
   return (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-edge px-6 py-3">
       <div className="flex items-center gap-2">
@@ -66,7 +66,7 @@ export const ControlPanel = memo(function ControlPanel(p: ControlPanelProps) {
           step={1}
           value={p.sizeIdx}
           onChange={(e) => p.onSizeIdx(Number(e.target.value))}
-          className="w-32 accent-accent"
+          className="h-11 w-32 accent-accent sm:h-8"
           aria-label={`Data size: ${SIZE_STOPS[p.sizeIdx]} elements`}
         />
         <span className="w-12 text-xs tabular-nums text-slate-200">n={SIZE_STOPS[p.sizeIdx]}</span>
@@ -81,7 +81,7 @@ export const ControlPanel = memo(function ControlPanel(p: ControlPanelProps) {
               onClick={() => p.onDist(d.id)}
               aria-pressed={p.dist === d.id}
               title={d.hint}
-              className={`px-2.5 py-1.5 text-xs transition-colors focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 ${
+              className={`min-h-11 px-2.5 py-1.5 text-xs transition-colors focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 sm:min-h-0 ${
                 p.dist === d.id
                   ? 'bg-accent/15 text-accent'
                   : 'bg-surface text-mute hover:text-slate-200'
@@ -108,7 +108,7 @@ export const ControlPanel = memo(function ControlPanel(p: ControlPanelProps) {
           step={1}
           value={p.speedIdx}
           onChange={(e) => p.onSpeedIdx(Number(e.target.value))}
-          className="w-32 accent-accent"
+          className="h-11 w-32 accent-accent sm:h-8"
           aria-label={`Speed: ${SPEED_STOPS[p.speedIdx]}×`}
         />
         <span className="w-12 text-xs tabular-nums text-slate-200">
@@ -133,7 +133,7 @@ export const ControlPanel = memo(function ControlPanel(p: ControlPanelProps) {
           step={1}
           value={p.volume}
           onChange={(e) => p.onVolume(Number(e.target.value))}
-          className="w-24 accent-accent"
+          className="h-11 w-24 accent-accent sm:h-8"
           aria-label={`Sound volume: ${p.volume}%`}
           disabled={!p.soundOn}
         />
