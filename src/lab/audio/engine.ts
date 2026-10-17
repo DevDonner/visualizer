@@ -8,7 +8,7 @@
  *    consonant; per-lane pitch offset keeps simultaneous blips from stacking.
  *  - Compare = quiet sine blip, swap = louder triangle blip, lane finish = a
  *    small ascending arpeggio. Exponential-decay envelopes, a shared low-pass,
- *    and a master gain.
+ *    and a master gain (fixed at 30% output — the whole engine is -70% loudness).
  *  - Rate-limited to a handful of notes per frame so a fast race becomes a
  *    texture rather than a wall of clicks.
  *  - Disabling mid-run (or disposing) never throws and leaves no dangling nodes:
@@ -33,6 +33,12 @@ const STEPS = PENTA.length * OCTAVES
 const BASE_HZ = 220
 /** Max notes scheduled per rAF frame (rate limit). */
 const FRAME_CAP = 24
+/**
+ * Fixed master attenuation: the whole engine outputs at 30% of its original
+ * level (-70%, user 2026-10-17 — "way too loud"). Applied to the master gain,
+ * so every note, arpeggio and slider position scales down uniformly.
+ */
+const MASTER_ATTENUATION = 0.3
 
 /** Per-lane semitone offset (bounded to one octave) so lanes don't pitch-clash. */
 function laneOffset(li: number): number {
@@ -123,7 +129,7 @@ export class SoundEngine {
   }
 
   private applyVolume(): void {
-    if (this.master) this.master.gain.value = this.volume
+    if (this.master) this.master.gain.value = this.volume * MASTER_ATTENUATION
   }
 
   /** Lazily build `osc → env → lowpass → master → destination`. */
@@ -135,7 +141,7 @@ export class SoundEngine {
     if (!Ctor) return
     const ctx = new Ctor()
     const master = ctx.createGain()
-    master.gain.value = this.volume
+    master.gain.value = this.volume * MASTER_ATTENUATION
     const lowpass = ctx.createBiquadFilter()
     lowpass.type = 'lowpass'
     lowpass.frequency.value = 4200

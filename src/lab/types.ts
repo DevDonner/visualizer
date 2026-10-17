@@ -8,9 +8,6 @@
  */
 export type LabStatus = 'live' | 'wip'
 
-/** 'solo' builds no badge; 'agentic' shows a violet badge (AI co-programmed). */
-export type LabMode = 'solo' | 'agentic'
-
 export interface LabMeta {
   /** Display name, e.g. "Snake". */
   title: string
@@ -18,8 +15,6 @@ export interface LabMeta {
   tagline: string
   /** 'wip' shows an amber badge; 'live' shows the accent badge. */
   status: LabStatus
-  /** How the lab was built. */
-  mode: LabMode
   /** Optional repo URL for the "Source" link. */
   github?: string
 }

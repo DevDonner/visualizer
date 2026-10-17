@@ -249,9 +249,6 @@ export default function SortLab() {
           </h1>
           <p className="text-xs text-mute">{meta.tagline}</p>
         </div>
-        <span className="rounded-full border border-edge bg-surface px-3 py-1 text-[11px] uppercase tracking-widest text-mute">
-          {meta.mode}
-        </span>
       </header>
 
       <ControlPanel
