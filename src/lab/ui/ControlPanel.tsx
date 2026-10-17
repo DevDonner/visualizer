@@ -1,10 +1,7 @@
 import { memo, type ReactNode } from 'react'
 import type { Distribution } from '../engine/types.ts'
 import { DISTRIBUTIONS } from '../engine/data.ts'
-import type { SoundMode } from '../audio/engine.ts'
 import { SIZE_STOPS, SPEED_STOPS } from './constants.ts'
-
-const SOUND_MODES: readonly SoundMode[] = ['compare', 'swap', 'both']
 
 /**
  * Global transport + race configuration. Re-rendered by the 4 Hz stat tick,
@@ -30,8 +27,6 @@ export interface ControlPanelProps {
   /** Master volume, 0..100. */
   volume: number
   onVolume: (v: number) => void
-  soundMode: SoundMode
-  onSoundMode: (m: SoundMode) => void
 }
 
 export const ControlPanel = memo(function ControlPanel(p: ControlPanelProps) {
@@ -142,28 +137,6 @@ export const ControlPanel = memo(function ControlPanel(p: ControlPanelProps) {
           aria-label={`Sound volume: ${p.volume}%`}
           disabled={!p.soundOn}
         />
-        <div
-          className="flex overflow-hidden rounded-lg border border-edge"
-          role="group"
-          aria-label="Sound mode"
-        >
-          {SOUND_MODES.map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => p.onSoundMode(m)}
-              aria-pressed={p.soundMode === m}
-              title={m === 'both' ? 'Compare + swap' : `Only ${m} sounds`}
-              className={`px-2.5 py-1.5 text-xs transition-colors focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 ${
-                p.soundMode === m
-                  ? 'bg-accent/15 text-accent'
-                  : 'bg-surface text-mute hover:text-slate-200'
-              }`}
-            >
-              {m[0].toUpperCase() + m.slice(1)}
-            </button>
-          ))}
-        </div>
       </LabeledGroup>
 
       <span className="ml-auto hidden items-center gap-1 text-[10px] text-mute xl:flex" aria-hidden>

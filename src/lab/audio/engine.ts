@@ -20,9 +20,6 @@
  */
 import type { Action } from '../engine/types.ts'
 
-/** Which action kinds are sonified. */
-export type SoundMode = 'compare' | 'swap' | 'both'
-
 /** C-major pentatonic, semitone offsets within one octave. */
 const PENTA = [0, 2, 4, 7, 9]
 /** Octaves of the scale spanned by a single bar's [0, 1] value. */
@@ -65,7 +62,6 @@ export class SoundEngine {
   private lowpass: BiquadFilterNode | null = null
   private enabled = false
   private volume = 0.25 // default — matches the UI slider default (25%)
-  private mode: SoundMode = 'both'
   private frameNotes = 0
 
   get isEnabled(): boolean {
@@ -93,10 +89,6 @@ export class SoundEngine {
     this.applyVolume()
   }
 
-  setMode(m: SoundMode): void {
-    this.mode = m
-  }
-
   /** Reset the per-frame note budget. Scheduler calls once per rAF frame. */
   beginFrame(): void {
     this.frameNotes = 0
@@ -107,11 +99,9 @@ export class SoundEngine {
     if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return
     if (this.frameNotes >= FRAME_CAP) return
     if (a.kind === 'compare') {
-      if (this.mode === 'swap') return
       this.frameNotes += 1
       this.blip('sine', value, li, 0.14, 0.05)
     } else if (a.kind === 'swap') {
-      if (this.mode === 'compare') return
       this.frameNotes += 1
       this.blip('triangle', value, li, 0.26, 0.07)
     } else if (a.kind === 'done') {

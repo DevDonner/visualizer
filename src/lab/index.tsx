@@ -4,7 +4,7 @@ import { ALGORITHMS } from './engine/registry.ts'
 import { makeData } from './engine/data.ts'
 import { radixKey } from './engine/algorithms/radix.ts'
 import type { RaceScheduler } from './scheduler.ts'
-import { SoundEngine, type SoundMode } from './audio/engine.ts'
+import { SoundEngine } from './audio/engine.ts'
 import {
   DEFAULT_DIST,
   DEFAULT_SELECTED,
@@ -75,7 +75,6 @@ export default function SortLab() {
   if (soundRef.current === null) soundRef.current = new SoundEngine()
   const [soundOn, setSoundOn] = useState(false)
   const [volume, setVolume] = useState(25) // 0..100
-  const [soundMode, setSoundMode] = useState<SoundMode>('both')
   useEffect(() => () => soundRef.current?.dispose(), [])
 
   // Leaderboard dismissal — re-armed deterministically when a new race begins
@@ -272,11 +271,6 @@ export default function SortLab() {
         onVolume={(v) => {
           soundRef.current?.setVolume(v / 100)
           setVolume(v)
-        }}
-        soundMode={soundMode}
-        onSoundMode={(m) => {
-          soundRef.current?.setMode(m)
-          setSoundMode(m)
         }}
       />
 
