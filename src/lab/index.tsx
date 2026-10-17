@@ -74,7 +74,7 @@ export default function SortLab() {
   const soundRef = useRef<SoundEngine | null>(null)
   if (soundRef.current === null) soundRef.current = new SoundEngine()
   const [soundOn, setSoundOn] = useState(false)
-  const [volume, setVolume] = useState(60) // 0..100
+  const [volume, setVolume] = useState(25) // 0..100
   const [soundMode, setSoundMode] = useState<SoundMode>('both')
   useEffect(() => () => soundRef.current?.dispose(), [])
 

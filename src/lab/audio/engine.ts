@@ -8,7 +8,7 @@
  *    consonant; per-lane pitch offset keeps simultaneous blips from stacking.
  *  - Compare = quiet sine blip, swap = louder triangle blip, lane finish = a
  *    small ascending arpeggio. Exponential-decay envelopes, a shared low-pass,
- *    and a master gain (fixed at 30% output — the whole engine is -70% loudness).
+ *    and a master gain (fixed at 15% output — the whole engine is -85% loudness).
  *  - Rate-limited to a handful of notes per frame so a fast race becomes a
  *    texture rather than a wall of clicks.
  *  - Disabling mid-run (or disposing) never throws and leaves no dangling nodes:
@@ -34,11 +34,12 @@ const BASE_HZ = 220
 /** Max notes scheduled per rAF frame (rate limit). */
 const FRAME_CAP = 24
 /**
- * Fixed master attenuation: the whole engine outputs at 30% of its original
- * level (-70%, user 2026-10-17 — "way too loud"). Applied to the master gain,
- * so every note, arpeggio and slider position scales down uniformly.
+ * Fixed master attenuation: the whole engine outputs at 15% of its original
+ * level (-85%; second pass 2026-10-17 — 30% was still too loud). Applied to
+ * the master gain, so every note, arpeggio and slider position scales down
+ * uniformly.
  */
-const MASTER_ATTENUATION = 0.3
+const MASTER_ATTENUATION = 0.15
 
 /** Per-lane semitone offset (bounded to one octave) so lanes don't pitch-clash. */
 function laneOffset(li: number): number {
@@ -63,7 +64,7 @@ export class SoundEngine {
   private master: GainNode | null = null
   private lowpass: BiquadFilterNode | null = null
   private enabled = false
-  private volume = 0.6
+  private volume = 0.25 // default — matches the UI slider default (25%)
   private mode: SoundMode = 'both'
   private frameNotes = 0
 
