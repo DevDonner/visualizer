@@ -5,6 +5,9 @@ A self-contained lab: pure-TS step-machine engines, canvas rendering, fully
 synthesized audio, shareable URLs, keyboard and screen-reader support.
 Zero network at runtime (fonts are bundled, audio is synthesized).
 
+- **Live:** `https://devdonner.github.io/visualizer/`
+- **Source:** https://github.com/DevDonner/visualizer
+
 ![Default view at 1440 — four lanes racing, algorithms grid above](screenshots/hero-1440.png)
 
 ## The twelve
@@ -24,7 +27,7 @@ visually exact.
 
 ```bash
 npm install
-npm run dev      # http://localhost:4180
+npm run dev      # http://localhost:4180/visualizer/  (base matches Pages)
 npm test         # 48 node --test suites, zero dependencies
 npm run build    # tsc --noEmit && vite build
 ```
